@@ -22,9 +22,28 @@ exports.handleRequest = function (req, res) {
   } else if (req.method === 'POST' && req.url === '/') {
     req.on('data', function(data) {
       var url = data.toString().split('=')[1];
-      archive.addUrlToList(url, function() {
-        res.writeHead(302, httpHelpers.headers);
-        res.end();
+      archive.isUrlInList(url, function(inList) {
+        if (inList) {
+          archive.isUrlArchived(url, function(exists) {
+            if (!exists) {
+              httpHelpers.serveAssets(res, archive.paths.siteAssets + '/loading.html', function(data) {
+                res.writeHead(302, httpHelpers.headers);
+                res.end(data);
+              });
+            } else {
+              res.writeHead(302, {
+                Location: '/' + url
+              });  
+            }
+          });
+        } else {
+          archive.addUrlToList(url, function() {
+            httpHelpers.serveAssets(res, archive.paths.siteAssets + '/loading.html', function(data) {
+              res.writeHead(302, httpHelpers.headers);
+              res.end(data);
+            });
+          });
+        }
       });
     });
   }
