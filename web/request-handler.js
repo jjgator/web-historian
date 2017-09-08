@@ -1,7 +1,31 @@
 var path = require('path');
 var archive = require('../helpers/archive-helpers');
+var httpHelpers = require('./http-helpers');
 // require more modules/folders here!
 
 exports.handleRequest = function (req, res) {
-  res.end(archive.paths.list);
+  if (req.method === 'GET' && req.url === '/') {
+    httpHelpers.serveAssets(res, archive.paths.siteAssets + '/index.html', function(data) {
+      res.end(data);
+    });
+  } else if (req.method === 'GET') {
+    archive.isUrlArchived(req.url, function(exists) {
+      if (exists === true) {
+        httpHelpers.serveAssets(res, archive.paths.archivedSites + req.url, function(data) {
+          res.end(data);
+        }); 
+      } else {
+        res.writeHead(404, httpHelpers.headers);
+        res.end('Someone deserves to feel bad about this.');
+      }
+    });
+  } else if (req.method === 'POST' && req.url === '/') {
+    req.on('data', function(data) {
+      var url = data.toString().split('=')[1];
+      archive.addUrlToList(url, function() {
+        res.writeHead(302, httpHelpers.headers);
+        res.end();
+      });
+    });
+  }
 };
