@@ -1,0 +1,1 @@
+*/1 * * * * /Users/student/.nvm/versions/node/v6.9.5/bin/node /Volumes/THAWSPACE/hratx29-web-historian/workers/htmlfetcher.js

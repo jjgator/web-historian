@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
+var axios = require('axios');
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -47,6 +48,10 @@ exports.isUrlArchived = function(url, callback) {
 
 exports.downloadUrls = function(urls) {
   urls.forEach(function(url) {
-    fs.writeFileSync(path.join(exports.paths.archivedSites, url), url, 'utf8');
+    axios.get('http://' + url).then(function(response) {
+      fs.writeFileSync(path.join(exports.paths.archivedSites, url), response.data, 'utf8');
+    }).catch(function(error) {
+      console.log(error);
+    });
   });
 };
